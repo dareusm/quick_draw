@@ -1,0 +1,9 @@
+Rules:
+1. Player stands in the middle of the screen
+2. Enemies will radomly appear with a random key above their head
+3. Player will need to shoot the enemies before enemies fire their weapon
+4. In order to shoot enemies player will need to press the key above their head
+4. If player shoots the enemy, the enemy dies and disappears from the screen
+5. If the enemy fires before the player, the player will lose even if enemy is killed (May implement health system)
+6. As time goes on, enemies will appear more quickly
+7. As time goes on, enemies rate of fire will increase
