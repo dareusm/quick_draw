@@ -6,7 +6,7 @@ import enemies as en
 import map
 
 # Set Screen Dimensions
-SCREEN_WIDTH, SCREEN_HEIGHT = 800, 600
+SCREEN_WIDTH, SCREEN_HEIGHT = 600, 400
 
 # Set up display
 pygame.init()
@@ -24,7 +24,7 @@ ENEMIES_IMAGE = pygame.image.load(os.path.join("Assets", "enemy_1.png"))
 ENEMIES_WIDTH, ENEMIES_HEIGHT = 50, 50
 
 #Set plain level
-PLANE_LEVEL = 465
+PLANE_LEVEL = 295
 
 def draw_window(character, enemies):
     WIN.blit(BACKGROUND, (0, 0))
