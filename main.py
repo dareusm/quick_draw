@@ -31,6 +31,15 @@ ENEMIES_WIDTH, ENEMIES_HEIGHT = 50, 50
 # Set plain level
 PLANE_LEVEL = 295
 
+# Create User Event
+ENEMYSPAWN = pygame.USEREVENT + 1
+
+def enemy_spawn_timer():
+    timer = pygame.time.set_timer(
+        ENEMYSPAWN, 3000
+    )  # Trigger enemy spawn every 3 seconds
+    return timer
+
 def draw_window(character, enemies):
     # Draw Background
     WIN.blit(BACKGROUND, (0, 0))
@@ -42,18 +51,26 @@ def draw_window(character, enemies):
 
     # Draw enemies
     for enemy in enemies:
-        if enemy.rect.x > 0 and enemy.rect.x < SCREEN_WIDTH - enemy.rect.width:
-            WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
+        #Keeping all enemies on the screen
+        if enemy.rect.x < 0:
+            enemy.rect.x = 0
+        elif enemy.rect.x > SCREEN_WIDTH:
+            enemy.rect.x = SCREEN_WIDTH - enemy.rect.width
 
+        #Flip the enemy image if the enemy is facing the opposite direction
         if enemy.rect.x > character.rect.x and enemy.facing_right:
             enemy.image = pygame.transform.flip(enemy.image, True, False)
             enemy.facing_right = False
         elif enemy.rect.x < character.rect.x and not enemy.facing_right:
             enemy.image = pygame.transform.flip(enemy.image, True, False)
             enemy.facing_right = True
+        
+        #Check if the enemy is on the same x coordinate as the character
+        if enemy.rect.x == character.rect.x or enemy.rect.x == character.rect.x + 20 or enemy.rect.x == character.rect.x - 20:
+            enemy.rect.x = random.randint(0, SCREEN_WIDTH - enemy.rect.x)
 
         WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
-        
+
         # Render the key to a surface
         key_surface = font.render(enemy.key, 1, (255, 255, 255))
 
@@ -77,8 +94,9 @@ def handle_enemies():
     enemies = []
     key = ""
     for i in range(5):
-        enemies.append(en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), PLANE_LEVEL, ENEMIES_IMAGE, key))
-        enemies = assign_random_key_to_enemies(enemies)
+        for event in pygame.event.get():
+            enemies.append(en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), PLANE_LEVEL, ENEMIES_IMAGE, key))
+            enemies = assign_random_key_to_enemies(enemies)
     return enemies 
 
 # Handle player and enemy bullets
@@ -89,16 +107,21 @@ def handle_bullets():
 def main():
     player_character = ch.Character(PLAYER_WIDTH, PLAYER_HEIGHT, SCREEN_WIDTH//2, PLANE_LEVEL, PLAYER_IMAGE)
     #enemy_characters_init = en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), random.randint(100, 500), ENEMIES_IMAGE)
-    enemy_characters = handle_enemies()
+    enemy_characters = []
     
     clock = pygame.time.Clock()
     run = True
+    enemy_spawn_timer()
     while run:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
+            elif event.type == ENEMYSPAWN:
+                key = get_random_key()
+                enemy_characters.append(en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), PLANE_LEVEL, ENEMIES_IMAGE, get_random_key()))
+                enemy_characters = assign_random_key_to_enemies(enemy_characters)
         draw_window(player_character, enemy_characters)
 
 if __name__ == "__main__":
