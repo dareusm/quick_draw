@@ -7,7 +7,7 @@ import map
 import string
 pygame.font.init()
 
-#Set up alphabet variable
+# Set up alphabet variable
 alphabet = list(string.ascii_lowercase)
 
 # Set Screen Dimensions
@@ -28,37 +28,47 @@ PLAYER_WIDTH, PLAYER_HEIGHT = 50, 50
 ENEMIES_IMAGE = pygame.image.load(os.path.join("Assets", "enemy_1.png"))
 ENEMIES_WIDTH, ENEMIES_HEIGHT = 50, 50
 
-#Set plain level
+# Set plain level
 PLANE_LEVEL = 295
 
 def draw_window(character, enemies):
-    #Draw Background
+    # Draw Background
     WIN.blit(BACKGROUND, (0, 0))
-    
-    #Draw Character
+
+    # Draw Character
     WIN.blit(character.image, (character.rect.x, character.rect.y))
-    
-    #Draw enemies
-    for enemy in enemies:
-        WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
-    
+
     font = pygame.font.SysFont("Comicsans", 30)
+
+    # Draw enemies
+    for enemy in enemies:
+        if enemy.rect.x > 0 and enemy.rect.x < SCREEN_WIDTH - enemy.rect.width:
+            WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
+
+        if enemy.rect.x > character.rect.x and enemy.facing_right:
+            enemy.image = pygame.transform.flip(enemy.image, True, False)
+            enemy.facing_right = False
+        elif enemy.rect.x < character.rect.x and not enemy.facing_right:
+            enemy.image = pygame.transform.flip(enemy.image, True, False)
+            enemy.facing_right = True
+
+        WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
         
-    #Render the key to a surface
-    key_surface = font.render(enemy.key, 1, (255, 255, 255))
-    
-    #Draw the key above the enemy
-    WIN.blit(key_surface, (enemy.rect.x, enemy.rect.y - key_surface.get_height()))
-        
-    #Update Display    
+        # Render the key to a surface
+        key_surface = font.render(enemy.key, 1, (255, 255, 255))
+
+        # Draw the key above the enemy
+        WIN.blit(key_surface, (enemy.rect.x+15, enemy.rect.y - key_surface.get_height()))
+
+    # Update Display
     pygame.display.update()
-    
-#Get random key from alphabet list
+
+# Get random key from alphabet list
 def get_random_key():
     return random.choice(alphabet)
 
-#Assign a random key to enemies
-def assign_random_key_to_enemy(enemies):
+# Assign a random key to enemies
+def assign_random_key_to_enemies(enemies):
     for enemy in enemies:
         enemy.key = get_random_key()
     return enemies
@@ -68,8 +78,8 @@ def handle_enemies():
     key = ""
     for i in range(5):
         enemies.append(en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), PLANE_LEVEL, ENEMIES_IMAGE, key))
-    enemies = assign_random_key_to_enemy(enemies)
-    return enemies
+        enemies = assign_random_key_to_enemies(enemies)
+    return enemies 
 
 # Handle player and enemy bullets
 def handle_bullets():

@@ -8,5 +8,6 @@ class Enemies:
         self.image = image
         self.key = key
         key = []
+        self.facing_right = True
     
     
