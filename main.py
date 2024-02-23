@@ -16,27 +16,29 @@ MAP = map.Map(SCREEN_WIDTH, SCREEN_HEIGHT, os.path.join("Assets", "background.jp
 BACKGROUND = pygame.transform.scale(pygame.image.load(MAP.background), (SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Set up player
-PLAYER = pygame.image.load(os.path.join("Assets", "player.png"))
+PLAYER_IMAGE = pygame.image.load(os.path.join("Assets", "player_character.png"))
 PLAYER_WIDTH, PLAYER_HEIGHT = 50, 50
 
 # Set up enemies
-ENEMIES = pygame.image.load(os.path.join("Assets", "enemy.png"))
+ENEMIES_IMAGE = pygame.image.load(os.path.join("Assets", "enemy_1.png"))
 ENEMIES_WIDTH, ENEMIES_HEIGHT = 50, 50
 
-player_character = ch.Character(PLAYER_WIDTH, PLAYER_HEIGHT, SCREEN_WIDTH//2, 100, PLAYER)
-enemy_characters = en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), random.randint(100, 500), ENEMIES)
-
+#Set plain level
+PLANE_LEVEL = 465
 
 def draw_window(character, enemies):
     WIN.blit(BACKGROUND, (0, 0))
-    WIN.blit(character.image, (character.x, character.y))
-    
+    WIN.blit(character.image, (character.rect.x, character.rect.y))
+    for enemy in enemies:
+        WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
     pygame.display.update()
+    
 
 def handle_enemies():
     enemies = []
     for i in range(5):
-        enemies.append(enemy_characters)
+        enemies.append(en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), PLANE_LEVEL, ENEMIES_IMAGE))
+    return enemies
 
 # Handle player and enemy bullets
 def handle_bullets():
@@ -44,7 +46,9 @@ def handle_bullets():
     enemy_bullets = []
 
 def main():
-    player_character = pygame.Rect(SCREEN_WIDTH//2, 100, PLAYER_WIDTH, PLAYER_HEIGHT)
+    player_character = ch.Character(PLAYER_WIDTH, PLAYER_HEIGHT, SCREEN_WIDTH//2, PLANE_LEVEL, PLAYER_IMAGE)
+    #enemy_characters_init = en.Enemies(ENEMIES_WIDTH, ENEMIES_HEIGHT, random.randint(100, 700), random.randint(100, 500), ENEMIES_IMAGE)
+    enemy_characters = handle_enemies()
     
     clock = pygame.time.Clock()
     run = True
@@ -54,7 +58,7 @@ def main():
             if event.type == pygame.QUIT:
                 run = False
                 pygame.quit()
-        draw_window()
+        draw_window(player_character, enemy_characters)
 
 if __name__ == "__main__":
     main()
