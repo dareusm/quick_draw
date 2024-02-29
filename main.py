@@ -42,6 +42,9 @@ PLAYERHIT = pygame.USEREVENT + 3
 # Set bullet speed
 BULLET_VEL = 10
 
+# Establish font
+font = pygame.font.SysFont("Comicsans", 30)
+
 
 def enemy_spawn_timer():
     timer = pygame.time.set_timer(
@@ -50,14 +53,17 @@ def enemy_spawn_timer():
     return timer
 
 
-def draw_window(character, enemies, player_bullets, enemy_bullets):
+def draw_window(character, enemies, player_bullets, enemy_bullets, score):
     # Draw Background
     WIN.blit(BACKGROUND, (0, 0))
+    
+    # Draw Score
+    score_text = "Score: "
+    score_surface = font.render(score_text + str(score), 1, (255, 255, 255))
+    WIN.blit(score_surface, (SCREEN_WIDTH // 2, SCREEN_HEIGHT - 350))
 
     # Draw Character
     WIN.blit(character.image, (character.rect.x, character.rect.y))
-
-    font = pygame.font.SysFont("Comicsans", 30)
 
     # Draw enemies
     for enemy in enemies:
@@ -65,7 +71,7 @@ def draw_window(character, enemies, player_bullets, enemy_bullets):
         if enemy.rect.x < 0:
             enemy.rect.x = 0
         elif enemy.rect.x > SCREEN_WIDTH:
-            enemy.rect.x = SCREEN_WIDTH - enemy.rect.width
+            enemy.rect.x = (SCREEN_WIDTH - enemy.rect.width) - 10
 
         # Flip the enemy image if the enemy is facing the opposite direction
         if enemy.rect.x > character.rect.x and enemy.facing_right:
@@ -76,12 +82,14 @@ def draw_window(character, enemies, player_bullets, enemy_bullets):
             enemy.facing_right = True
 
         # Check if the enemy is on the same x coordinate as the character
-        if (
-            enemy.rect.x == character.rect.x
-            or enemy.rect.x == character.rect.x + 20
-            or enemy.rect.x == character.rect.x - 20
-        ):
-            enemy.rect.x = random.randint(0, SCREEN_WIDTH - enemy.rect.x)
+        distance_array = list(range(1, 51))
+        for i in distance_array:
+            if (
+                enemy.rect.x == character.rect.x
+                or enemy.rect.x == character.rect.x + i
+                or enemy.rect.x == character.rect.x - i
+            ):
+                enemy.rect.x = random.randint(0, SCREEN_WIDTH - enemy.rect.width)
 
         WIN.blit(enemy.image, (enemy.rect.x, enemy.rect.y))
 
@@ -92,7 +100,7 @@ def draw_window(character, enemies, player_bullets, enemy_bullets):
         WIN.blit(
             key_surface, (enemy.rect.x + 15, enemy.rect.y - key_surface.get_height())
         )
-
+        
         # Draw player bullets
     for bullet in player_bullets:
         pygame.draw.rect(WIN, (255, 0, 0), bullet)
@@ -137,33 +145,6 @@ def handle_enemies():
 
 
 # Handle player and enemy bullets
-"""
-def handle_bullets(player_bullets, enemy_bullets, player, enemies):
-    for player_bullet in player_bullets:
-        if enemies.x > player.x:
-            player_bullet.x += BULLET_VEL
-            if enemies.colliderect(player_bullet):
-                pygame.event.post(ENEMYHIT)
-                player_bullets.remove(player_bullet)
-        if enemies.x < player.x:
-            player_bullet.x -= BULLET_VEL
-            if enemies.colliderect(player_bullet):
-                pygame.event.post(ENEMYHIT)
-                player_bullets.remove(player_bullet)
-
-    for enemy_bullet in enemy_bullets:
-        if player.x > enemies.x:
-            enemy_bullet.x += BULLET_VEL
-            if player.colliderect(enemy_bullet):
-                pygame.event.post(PLAYERHIT)
-                enemy_bullets.remove(enemy_bullet)
-            if player.x < enemies.x:
-                enemy_bullet.x -= BULLET_VEL
-                if player.colliderect(enemy_bullet):
-                    pygame.event.post(PLAYERHIT)
-                    enemy_bullets.remove(enemy_bullet)
-"""
-
 def handle_bullets(player_bullets, enemy_bullets, player, enemies):
     for player_bullet in player_bullets:
         for enemy in enemies:
@@ -172,12 +153,15 @@ def handle_bullets(player_bullets, enemy_bullets, player, enemies):
                 if enemy.rect.colliderect(player_bullet):
                     pygame.event.post(pygame.event.Event(ENEMYHIT))
                     player_bullets.remove(player_bullet)
+                    enemies.remove(enemy)
+                    break
             elif enemy.rect.x < player.rect.x:
                 player_bullet.x -= BULLET_VEL
                 if enemy.rect.colliderect(player_bullet):
                     pygame.event.post(pygame.event.Event(ENEMYHIT))
                     player_bullets.remove(player_bullet)
-
+                    enemies.remove(enemy)
+                    break
     for enemy_bullet in enemy_bullets:
         if player.rect.x > enemy.rect.x:
             enemy_bullet.x += BULLET_VEL
@@ -190,7 +174,6 @@ def handle_bullets(player_bullets, enemy_bullets, player, enemies):
                 pygame.event.post(pygame.event.Event(PLAYERHIT))
                 enemy_bullets.remove(enemy_bullet)
 
-
 def main():
     player_character = ch.Character(
         PLAYER_WIDTH, PLAYER_HEIGHT, SCREEN_WIDTH // 2, PLANE_LEVEL, PLAYER_IMAGE
@@ -201,6 +184,9 @@ def main():
     # Bullets
     player_bullets = []
     enemy_bullets = []
+
+    # Record score
+    score = 0
 
     clock = pygame.time.Clock()
     last_shot_time = pygame.time.get_ticks()  # Initialize last_shot_time
@@ -231,24 +217,22 @@ def main():
             if event.type == pygame.KEYDOWN:
                 for enemy in enemy_characters:
                     if event.unicode == enemy.key:
-                        if current_time - last_shot_time > 1000:  # Fire rate control (1 shot per second)
-                            """
-                            bullet = pygame.Rect(player_character.rect.x + player_character.rect.width, player_character.rect.y + player_character.rect.height // 2, 10, 5)
+                        # if current_time - last_shot_time > 1000:  # Fire rate control (1 shot per second)
+
+                        if enemy.rect.x > player_character.rect.x:
+                            bullet = pygame.Rect(player_character.rect.x + player_character.rect.width, PLANE_LEVEL - (player_character.rect.height//30), 10, 5)
                             player_bullets.append(bullet)
-                            last_shot_time = current_time
-                            """
-                            if enemy.rect.x > player_character.rect.x:
-                                bullet = pygame.Rect(player_character.rect.x + player_character.rect.width, SCREEN_WIDTH - PLANE_LEVEL - (player_character.rect.height // 3), 10, 5)
-                                player_bullets.append(bullet)
-                                last_shot_time = current_time
-                            if enemy.rect.x < player_character.rect.x:
-                                bullet = pygame.Rect(player_character.rect.x, SCREEN_WIDTH - PLANE_LEVEL - (player_character.rect.height // 3), 10, 5)
-                                player_bullets.append(bullet)
-                                last_shot_time = current_time
-                                
+                            # last_shot_time = current_time
+                            score += 1
+
+                        if enemy.rect.x < player_character.rect.x:
+                            bullet = pygame.Rect(player_character.rect.x, PLANE_LEVEL - (player_character.rect.height//30), 10, 5)
+                            player_bullets.append(bullet)
+                            # last_shot_time = current_time
+                            score += 1
 
         handle_bullets(player_bullets, enemy_bullets, player_character, enemy_characters)
-        draw_window(player_character, enemy_characters, player_bullets, enemy_bullets)
+        draw_window(player_character, enemy_characters, player_bullets, enemy_bullets, score)
 
 
 if __name__ == "__main__":
